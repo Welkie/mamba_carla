@@ -280,7 +280,7 @@ def main():
     os.chdir(BASE_DIR)
 
     # Lấy danh sách file dataset trong folder datasets/SMD/train
-    train_dir = os.path.join("datasets", "smd", "train")
+    train_dir = os.path.join("datasets", "SMD", "train")
     if not os.path.exists(train_dir):
         print(f"Error: Directory {train_dir} does not exist.")
         return
@@ -357,7 +357,7 @@ def main():
             
     else: # Phase 0
         print("\nVerifying all results for evaluation...")
-        # Evaluate all files directly
+        # Evaluate all files directly 
         eval_results = evaluate_experiments(all_files)
         
         if eval_results:
