@@ -1,0 +1,39 @@
+# arch==6.0
+# faiss-cpu
+# matplotlib>=3.7.0
+# numpy>=1.24.0
+# pandas
+# scikit-learn==1.4.2
+# scipy==1.13.1
+# seaborn==0.13.0
+# torch==2.4.1
+# torchaudio==2.4.1
+# torchmetrics==1.0.1
+# torchvision==0.19.1
+# mamba-ssm==2.2.5
+# causal-conv1d==1.5.2
+# PyYAML
+# core
+# core numeric
+numpy>=1.24.0
+pandas>=2.1.0
+scipy>=1.10
+scikit-learn
+
+# configs & utils
+PyYAML>=6.0
+easydict==1.10
+termcolor==2.4.0
+tqdm>=4.66.0
+
+# plotting
+matplotlib>=3.7.0
+seaborn==0.13.0
+
+# metrics
+torchmetrics>=1.0.1
+
+# others
+faiss-cpu
+
+
