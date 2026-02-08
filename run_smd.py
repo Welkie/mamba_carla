@@ -306,7 +306,7 @@ def main():
             data_files = all_files[mid_point:]
             print(f"PHASE 2: Running last {len(data_files)} datasets.")
 
-    current_time_stats = run_experiments(BASE_DIR, data_files, sys.executable, phase=args.phase)
+    current_time_stats = run_experiments(data_files, sys.executable, phase=args.phase)
     
     # Configure evaluation paths
     phase_1_metrics_file = "results/smd/phase_1_metrics_df.csv"
