@@ -77,8 +77,16 @@ class SWAT(Dataset):
         else:
             labels = np.asarray(raw_labels)
             
-        # Extract data features (columns 1 to 51, skipping Timestamp at 0 and Label at 52)
-        temp = np.asarray(temp.iloc[:, 1:52])
+        # Drop timestamp + label columns dynamically
+        feature_df = temp.drop(columns=[label_col], errors='ignore')
+
+        # Drop timestamp-like column
+        for col in feature_df.columns:
+            if 'time' in col.lower():
+                feature_df = feature_df.drop(columns=[col])
+                break
+
+        temp = feature_df.values
 
         if np.any(sum(np.isnan(temp))!=0):
             print('Data contains NaN which replaced with zero')
