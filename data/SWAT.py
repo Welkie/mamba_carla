@@ -51,7 +51,30 @@ class SWAT(Dataset):
 
         file_path = os.path.join(self.root, file_name)
         temp = pd.read_csv(file_path)
-        labels = np.asarray(temp['attack'])
+        
+        # Strip whitespace from column names
+        temp = temp.rename(columns=lambda x: x.strip())
+        
+        # Find the label column
+        label_col = None
+        possible_label_cols = ['attack', 'Attack', 'Normal/Attack', 'label', 'class']
+        for col in possible_label_cols:
+            if col in temp.columns:
+                label_col = col
+                break
+        
+        if label_col is None:
+            raise KeyError(f"Could not find a label column in {file_path}. Available columns: {list(temp.columns)}")
+            
+        # Extract and convert labels
+        raw_labels = temp[label_col].values
+        if raw_labels.dtype == object or isinstance(raw_labels[0], str):
+            # Map 'Normal' to 0, others to 1
+            labels = (raw_labels != 'Normal').astype(int)
+        else:
+            labels = np.asarray(raw_labels)
+            
+        # Extract data features (columns 1 to 51, skipping Timestamp at 0 and Label at 52)
         temp = np.asarray(temp.iloc[:, 1:52])
 
         if np.any(sum(np.isnan(temp))!=0):

@@ -80,5 +80,48 @@ def check_smd_lengths():
     else:
         print("\nNo files are shorter than length 512.")
 
+def check_swat_lengths():
+    print("\nChecking SWAT dataset lengths...")
+    
+    # Check in local datasets/SWAT folder first
+    base_dir = "datasets/SWAT"
+    # Fallback to Kaggle input if needed (though we expect them to be copied/available)
+    kaggle_input_path = "/kaggle/input/swat-dataset-secure-water-treatment-system"
+    
+    files_to_check = ["normal.csv", "attack.csv"]
+    files_shorter_than_512 = []
+    
+    for fname in files_to_check:
+        # Try local first
+        path = os.path.join(base_dir, fname)
+        if not os.path.exists(path):
+            # Try kaggle input
+             path = os.path.join(kaggle_input_path, fname)
+        
+        if os.path.exists(path):
+            try:
+                # Read using pandas
+                # Skipping first row header is default in pandas read_csv
+                # We should trim spaces in column names just in case, but usually length check is fine
+                df = pd.read_csv(path)
+                length = len(df)
+                
+                print(f"File {fname}: length {length}")
+                
+                if length < 512:
+                    files_shorter_than_512.append(f"SWAT {fname}: {length}")
+            except Exception as e:
+                print(f"Error reading {path}: {e}")
+        else:
+            print(f"Warning: {fname} does not exist in {base_dir} or {kaggle_input_path}")
+
+    if files_shorter_than_512:
+        print(f"\nFiles shorter than length 512 in SWAT ({len(files_shorter_than_512)} files):")
+        for f in files_shorter_than_512:
+            print(f)
+    else:
+        print("\nAll checked SWAT files are longer than 512.")
+
 if __name__ == "__main__":
     check_smd_lengths()
+    check_swat_lengths()
