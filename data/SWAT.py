@@ -1,4 +1,3 @@
-
 import os
 import pandas
 import numpy as np
@@ -39,7 +38,7 @@ class SWAT(Dataset):
         self.data = []
         self.targets = []
         labels = []
-        wsz, stride = 512, 10
+        self.wsz, self.stride = 512, 10
 
         if fname.lower() == 'swat':
             if self.train:
@@ -93,12 +92,6 @@ class SWAT(Dataset):
             temp = np.nan_to_num(temp)
 
         self.mean, self.std = mean_data, std_data
-        # if self.train:
-        #     self.mean = np.mean(temp, axis=0)
-        #     self.std = np.std(temp , axis=0)
-        # else:
-        #     self.std[self.std == 0.0] = 1.0
-        #     temp = (temp - self.mean) / self.std
 
         if self.train:
             min_column = np.amin(temp, axis=0)
@@ -111,21 +104,9 @@ class SWAT(Dataset):
 
         self.targets = labels
         self.data = np.asarray(temp)
-        self.data, self.targets = self.convert_to_windows(wsz, stride)
 
-    def convert_to_windows(self, w_size, stride):
-        windows = []
-        wlabels = []
-        sz = int((self.data.shape[0]-w_size)/stride)
-        for i in range(0, sz):
-            st = i * stride
-            w = self.data[st:st+w_size]
-            if self.targets[st:st+w_size].any() > 0:
-                lbl = 1
-            else: lbl=0
-            windows.append(w)
-            wlabels.append(lbl)
-        return np.stack(windows), np.stack(wlabels)
+        # Pre-calculate window start indices for lazy loading
+        self.sliding_window_start_indices = np.arange(0, self.data.shape[0] - self.wsz + 1, self.stride)
 
     def __getitem__(self, index):
         """
@@ -134,13 +115,16 @@ class SWAT(Dataset):
         Returns:
             dict: {'ts': ts, 'target': index of target class, 'meta': dict}
         """
-        ts_org = torch.from_numpy(self.data[index]).float().to(device)  # cuda
-        if len(self.targets) > 0:
-            target = torch.tensor(self.targets[index].astype(int), dtype=torch.long).to(device)
-            class_name = self.classes[target]
-        else:
-            target = 0
-            class_name = ''
+        # Lazy loading of windows
+        idx = self.sliding_window_start_indices[index]
+        window = self.data[idx : idx + self.wsz]
+        window_targets = self.targets[idx : idx + self.wsz]
+        
+        target = 1 if np.any(window_targets > 0) else 0
+        class_name = self.classes[target]
+        
+        ts_org = torch.from_numpy(window).float().to(device)
+        target = torch.tensor(target, dtype=torch.long).to(device)
 
         ts_size = (ts_org.shape[0], ts_org.shape[1])
 
@@ -160,7 +144,7 @@ class SWAT(Dataset):
         self.targets = np.concatenate((self.targets, new_ds.targets), axis=0)
 
     def __len__(self):
-        return len(self.data)
+        return len(self.sliding_window_start_indices)
 
     def extra_repr(self):
         return "Split: {}".format("Train" if self.train is True else "Test")
