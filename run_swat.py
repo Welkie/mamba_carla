@@ -253,59 +253,17 @@ def main():
     datasets = ["swat"]
 
     # Define the Kaggle input path provided by the user
-    kaggle_input_path = "/kaggle/input/swat-dataset-secure-water-treatment-system"
+    # Define the dataset path
     writable_dataset_path = os.path.join(BASE_DIR, "datasets", "SWAT")
-
-    # Ensure writable directory exists
-    os.makedirs(writable_dataset_path, exist_ok=True)
-
-    # Check if the Kaggle input path exists
-    if os.path.exists(kaggle_input_path):
-        print(f"Found Kaggle dataset at: {kaggle_input_path}")
-        
-        # files to look for
-        files = os.listdir(kaggle_input_path)
-        normal_file = None
-        attack_file = None
-
-        # Heuristic to find files
-        if 'normal.csv' in files:
-            normal_file = 'normal.csv'
-        else:
-            for f in files:
-                if 'normal' in f.lower() and f.endswith('.csv'):
-                    normal_file = f
-                    break
-        
-        if 'attack.csv' in files:
-            attack_file = 'attack.csv'
-        else:
-            for f in files:
-                if 'attack' in f.lower() and f.endswith('.csv'):
-                    attack_file = f
-                    break
-        
-        # Copy to writable path with correct names
-        if normal_file:
-            src = os.path.join(kaggle_input_path, normal_file)
-            dst = os.path.join(writable_dataset_path, "normal.csv")
-            print(f"Copying {src} to {dst}...")
-            shutil.copyfile(src, dst)
-        else:
-            print("Warning: Could not find normal file in Kaggle input")
-
-        if attack_file:
-            src = os.path.join(kaggle_input_path, attack_file)
-            dst = os.path.join(writable_dataset_path, "attack.csv")
-            print(f"Copying {src} to {dst}...")
-            shutil.copyfile(src, dst)
-        else:
-            print("Warning: Could not find attack file in Kaggle input")
-
-        os.environ['SWAT_DATASET_PATH'] = writable_dataset_path
-        print(f"Set SWAT_DATASET_PATH to {writable_dataset_path}")
-    else:
-        print("Kaggle input path not found and kagglehub not installed/setup. Skipping automatic dataset setup.")
+    
+    # Check if files exist
+    if not os.path.exists(os.path.join(writable_dataset_path, "normal.csv")) or \
+       not os.path.exists(os.path.join(writable_dataset_path, "attack.csv")):
+        print(f"Warning: normal.csv or attack.csv not found in {writable_dataset_path}")
+        print("Please ensure 'datasets/SWAT/normal.csv' and 'datasets/SWAT/attack.csv' exist.")
+    
+    os.environ['SWAT_DATASET_PATH'] = writable_dataset_path
+    print(f"Set SWAT_DATASET_PATH to {writable_dataset_path}")
 
 
     time_results = run_experiments(BASE_DIR, datasets, sys.executable)

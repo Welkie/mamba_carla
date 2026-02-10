@@ -57,33 +57,41 @@ class SWAT(Dataset):
         # Strip whitespace from column names
         temp = temp.rename(columns=lambda x: x.strip())
         
-        # Find the label column
+        # Find the label column - prioritize 'Normal/Attack' as seen in the file
         label_col = None
-        possible_label_cols = ['attack', 'Attack', 'Normal/Attack', 'label', 'class']
-        for col in possible_label_cols:
-            if col in temp.columns:
-                label_col = col
-                break
+        if 'Normal/Attack' in temp.columns:
+            label_col = 'Normal/Attack'
+        else:
+            possible_label_cols = ['attack', 'Attack', 'label', 'class']
+            for col in possible_label_cols:
+                if col in temp.columns:
+                    label_col = col
+                    break
         
         if label_col is None:
             raise KeyError(f"Could not find a label column in {file_path}. Available columns: {list(temp.columns)}")
             
         # Extract and convert labels
         raw_labels = temp[label_col].values
+        # Check if labels are string (containing 'Normal') or already numeric
         if raw_labels.dtype == object or isinstance(raw_labels[0], str):
-            # Map 'Normal' to 0, others to 1
-            labels = (raw_labels != 'Normal').astype(int)
+            # 'Normal' is 0, anything else (e.g. 'Attack', 'A ttack') is 1
+            # Using strip() to handle potential whitespace in values
+            labels = np.array([0 if str(x).strip() == 'Normal' else 1 for x in raw_labels])
         else:
-            labels = np.asarray(raw_labels)
+            labels = np.asarray(raw_labels).astype(int)
             
-        # Drop timestamp + label columns dynamically
+        # Drop label column
         feature_df = temp.drop(columns=[label_col], errors='ignore')
 
-        # Drop timestamp-like column
-        for col in feature_df.columns:
-            if 'time' in col.lower():
-                feature_df = feature_df.drop(columns=[col])
-                break
+        # Drop 'Timestamp' or any time column
+        if 'Timestamp' in feature_df.columns:
+            feature_df = feature_df.drop(columns=['Timestamp'])
+        else:
+            for col in feature_df.columns:
+                if 'time' in col.lower():
+                    feature_df = feature_df.drop(columns=[col])
+                    break
 
         temp = feature_df.values
 
