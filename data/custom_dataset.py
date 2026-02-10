@@ -86,7 +86,8 @@ class NeighborsDataset(Dataset):
             self.neighbor_transform = transform
        
         dataset.transform = None
-        all_data = dataset.data.to(device)
+        # all_data = dataset.data.to(device) # CPU
+        all_data = dataset.data
         self.dataset = dataset
 
         NN_indices = N_indices.copy() # Nearest neighbor indices (np.array  [len(dataset) x k])
@@ -96,8 +97,11 @@ class NeighborsDataset(Dataset):
             self.FN_indices = FN_indices[:, -p['num_neighbors']:]
         #assert( int(self.indices.shape[0]/4) == len(self.dataset) )
 
-        self.dataset.data = dataset.data.to(device)
-        self.dataset.targets = dataset.targets.to(device)
+        # self.dataset.data = dataset.data.to(device)
+        # self.dataset.targets = dataset.targets.to(device)
+        self.dataset.data = dataset.data # CPU
+        self.dataset.targets = dataset.targets # CPU
+        
         num_samples = self.dataset.data.shape[0]
         NN_index = np.array([np.random.choice(self.NN_indices[i], 1)[0] for i in range(num_samples)])
         FN_index = np.array([np.random.choice(self.FN_indices[i], 1)[0] for i in range(num_samples)])
