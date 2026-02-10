@@ -123,7 +123,7 @@ class SubAnomaly(object):
             num_dims = np.random.randint(int(num_features/10), int(num_features/2)) #(int(num_features/5), int(num_features/2))
             for k in range(num_dims):
                 i = np.random.randint(0, num_features)
-                temp_win = window[:, i].reshape((window.shape[0], 1))
+                temp_win = window[:, i] # Keep as 1D
                 anomaly_seasonal[:, i] = self.inject_frequency_anomaly(temp_win,
                                                               scale_factor=1,
                                                               trend_factor=0,
