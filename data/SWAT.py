@@ -41,8 +41,33 @@ class SWAT(Dataset):
             file_path = os.path.join(self.root, "attack.csv")
 
         temp = pd.read_csv(file_path)
-        labels = np.asarray(temp['attack'])
-        temp = np.asarray(temp.iloc[:, 1:52])
+        
+        # Clean up column names (strip whitespace)
+        temp.columns = temp.columns.str.strip()
+        
+        # Detect label column
+        label_col = 'attack'
+        possible_labels = ['attack', 'Attack', 'Normal/Attack', 'label', 'class']
+        for col in possible_labels:
+            if col in temp.columns:
+                label_col = col
+                break
+        
+        if label_col not in temp.columns:
+            print(f"Warning: Label column not found. Available columns: {temp.columns.tolist()}")
+            # Fallback: assume the last column is the label if not found
+            label_col = temp.columns[-1]
+            print(f"Using last column '{label_col}' as label.")
+
+        labels = np.asarray(temp[label_col])
+        
+        # Extract features (assuming column 0 is Timestamp, and columns 1-51 are sensors)
+        # Verify valid columns
+        try:
+            temp = np.asarray(temp.iloc[:, 1:52])
+        except Exception as e:
+            print(f"Error extracting features: {e}. Checking DataFrame shape: {temp.shape}")
+            raise e
 
         if np.any(sum(np.isnan(temp))!=0):
             print('Data contains NaN which replaced with zero')
