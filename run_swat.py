@@ -253,10 +253,65 @@ def main():
     datasets = ["swat"]
 
     # Define the Kaggle input path provided by the user
-    # Define the dataset path
+    # Define the Kaggle input path provided by the user
+    kaggle_input_path = "/kaggle/input/swat-dataset-secure-water-treatment-system"
     writable_dataset_path = os.path.join(BASE_DIR, "datasets", "SWAT")
-    
-    # Check if files exist
+
+    # Ensure writable directory exists
+    os.makedirs(writable_dataset_path, exist_ok=True)
+
+    # Check if the Kaggle input path exists - Restore compatibility for Kaggle
+    if os.path.exists(kaggle_input_path):
+        print(f"Found Kaggle dataset at: {kaggle_input_path}")
+        
+        # files to look for
+        files = os.listdir(kaggle_input_path)
+        normal_file = None
+        attack_file = None
+
+        # Heuristic to find files
+        if 'normal.csv' in files:
+            normal_file = 'normal.csv'
+        else:
+            for f in files:
+                if 'normal' in f.lower() and f.endswith('.csv'):
+                    normal_file = f
+                    break
+        
+        if 'attack.csv' in files:
+            attack_file = 'attack.csv'
+        else:
+            for f in files:
+                if 'attack' in f.lower() and f.endswith('.csv'):
+                    attack_file = f
+                    break
+        
+        # Copy to writable path with correct names if they don't exist
+        if normal_file:
+            src = os.path.join(kaggle_input_path, normal_file)
+            dst = os.path.join(writable_dataset_path, "normal.csv")
+            if not os.path.exists(dst):
+                print(f"Copying {src} to {dst}...")
+                shutil.copyfile(src, dst)
+        else:
+            print("Warning: Could not find normal file in Kaggle input")
+
+        if attack_file:
+            src = os.path.join(kaggle_input_path, attack_file)
+            dst = os.path.join(writable_dataset_path, "attack.csv")
+            if not os.path.exists(dst):
+                print(f"Copying {src} to {dst}...")
+                shutil.copyfile(src, dst)
+        else:
+            print("Warning: Could not find attack file in Kaggle input")
+
+        os.environ['SWAT_DATASET_PATH'] = writable_dataset_path
+        print(f"Set SWAT_DATASET_PATH to {writable_dataset_path}")
+    else:
+        # Local environment fallback
+        print("Kaggle input path not found. using local path if available.")
+        
+    # Check if files exist (Common check)
     if not os.path.exists(os.path.join(writable_dataset_path, "normal.csv")) or \
        not os.path.exists(os.path.join(writable_dataset_path, "attack.csv")):
         print(f"Warning: normal.csv or attack.csv not found in {writable_dataset_path}")
