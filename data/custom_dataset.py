@@ -16,7 +16,6 @@ class AugmentedDataset(Dataset):
     def __init__(self, dataset):
         super(AugmentedDataset, self).__init__()
         self.current_epoch = 0
-        self.samples = [{} for _ in range(len(dataset))]  # Initialized with empty dictionaries
         transform = dataset.transform
         sanomaly = dataset.sanomaly
         dataset.transform = None
@@ -30,53 +29,6 @@ class AugmentedDataset(Dataset):
             self.augmentation_transform = transform
             self.subseq_anomaly = sanomaly
 
-        self.create_pairs()
-
-    def create_pairs(self):
-        mmean, sstd = self.dataset.get_info()
-        mmean = torch.tensor(mmean, dtype=torch.float32).to(device)
-        sstd = torch.tensor(sstd, dtype=torch.float32).to(device)
-        # min_data, max_data = self.dataset.get_info()
-        # range_val = (max_data - min_data) + 1e-20
-        for index in range(len(self.dataset)):
-            item = self.dataset.__getitem__(index)
-            # ts_org = item['ts_org']
-            # ts_trg = item['target']
-            ts_org = item['ts_org'].clone().detach().to(device)
-            ts_trg = item['target'].clone().detach().to(device)
-            
-
-
-            # mmean = np.mean(ts_org, axis=0)
-            # sstd = np.std(ts_org, axis=0)
-            # min_val = np.min(ts_org, axis=0)
-            # max_val = np.max(ts_org, axis=0)
-            # range_val = (max_val - min_val) + 1e-20
-
-            # Get random neighbor from windows before time step T
-            if index > 10:
-                rand_nei = np.random.randint(index - 10, index)
-                sample_nei = self.dataset.__getitem__(rand_nei)
-                # ts_w_augment = sample_nei['ts_org']
-                ts_w_augment = sample_nei['ts_org'].clone().detach().to(device)
-            else:
-                ts_w_augment = self.augmentation_transform(ts_org)
-
-            ts_ss_augment = self.subseq_anomaly(ts_org)
-            # sstd = np.where((sstd == 0.0), 1.0, sstd)
-            sstd = torch.where(sstd == 0.0, torch.tensor(1.0, device=sstd.device), sstd) #CUDA!
-
-            self.samples[index] = {
-                'ts_org': (ts_org - mmean) / sstd,
-                'ts_w_augment': (ts_w_augment - mmean) / sstd,
-                'ts_ss_augment':  (ts_ss_augment - mmean) / sstd,
-                'target': ts_trg
-                # 'ts_org': (ts_org - min_data) / range_val,
-                # 'ts_w_augment': (ts_w_augment - min_data) / range_val,
-                # 'ts_ss_augment':  (ts_ss_augment - min_data) / range_val,
-                # 'target': ts_trg
-            }
-
     def __len__(self):
         return len(self.dataset)
 
@@ -88,7 +40,35 @@ class AugmentedDataset(Dataset):
         self.current_epoch = epoch
 
     def __getitem__(self, index):
-        return self.samples[index]
+        # Lazy loading: Compute augmentations on-the-fly
+        mmean, sstd = self.dataset.get_info()
+        mmean = torch.tensor(mmean, dtype=torch.float32)
+        sstd = torch.tensor(sstd, dtype=torch.float32)
+        
+        item = self.dataset.__getitem__(index)
+        ts_org = item['ts_org'].clone().detach()
+        ts_trg = item['target'].clone().detach()
+
+        # Get random neighbor from windows before time step T (Simulated or actual)
+        # Note: Original logic had access to all data via self.dataset.__getitem__
+        if index > 10:
+            rand_nei = np.random.randint(index - 10, index)
+            sample_nei = self.dataset.__getitem__(rand_nei)
+            ts_w_augment = sample_nei['ts_org'].clone().detach()
+        else:
+            ts_w_augment = self.augmentation_transform(ts_org)
+
+        ts_ss_augment = self.subseq_anomaly(ts_org)
+        
+        # Ensure sstd is not zero
+        sstd = torch.where(sstd == 0.0, torch.tensor(1.0), sstd)
+
+        return {
+            'ts_org': (ts_org - mmean) / sstd,
+            'ts_w_augment': (ts_w_augment - mmean) / sstd,
+            'ts_ss_augment':  (ts_ss_augment - mmean) / sstd,
+            'target': ts_trg
+        }
 
 """ 
     NeighborsDataset
