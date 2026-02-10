@@ -1,15 +1,13 @@
+
 import os
 import pandas
 import numpy as np
 import pandas as pd
+import torch
 from torch.utils.data import Dataset
 from utils.mypath import MyPath
 import ast
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
-import torch
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 class SWAT(Dataset):
     """`SMD <https://www>`_ Dataset.
@@ -25,9 +23,6 @@ class SWAT(Dataset):
 
     def __init__(self, fname, root=MyPath.db_root_dir('swat'), train=True, transform=None, sanomaly= None, mean_data=None, std_data=None):
 
-        if 'SWAT_DATASET_PATH' in os.environ:
-            root = os.environ['SWAT_DATASET_PATH']
-        
         super(SWAT, self).__init__()
         self.root = root
         self.transform = transform
@@ -38,73 +33,35 @@ class SWAT(Dataset):
         self.data = []
         self.targets = []
         labels = []
-        self.wsz, self.stride = 512, 10
+        wsz, stride = 256, 10
 
-        if fname.lower() == 'swat':
-            if self.train:
-                file_name = 'normal.csv'
-            else:
-                file_name = 'attack.csv'
+        if self.train:
+            file_path = os.path.join(self.root, "normal.csv")
         else:
-            if self.train:
-                file_name = fname + '_train.csv'
-            else:
-                file_name = fname + '_test.csv'
+            file_path = os.path.join(self.root, "attack.csv")
 
-        file_path = os.path.join(self.root, file_name)
         temp = pd.read_csv(file_path)
-        
-        # Strip whitespace from column names
-        temp = temp.rename(columns=lambda x: x.strip())
-        
-        # Find the label column - prioritize 'Normal/Attack' as seen in the file
-        label_col = None
-        if 'Normal/Attack' in temp.columns:
-            label_col = 'Normal/Attack'
-        else:
-            possible_label_cols = ['attack', 'Attack', 'label', 'class']
-            for col in possible_label_cols:
-                if col in temp.columns:
-                    label_col = col
-                    break
-        
-        if label_col is None:
-            raise KeyError(f"Could not find a label column in {file_path}. Available columns: {list(temp.columns)}")
-            
-        # Extract and convert labels
-        raw_labels = temp[label_col].values
-        # Check if labels are string (containing 'Normal') or already numeric
-        if raw_labels.dtype == object or isinstance(raw_labels[0], str):
-            # 'Normal' is 0, anything else (e.g. 'Attack', 'A ttack') is 1
-            # Using strip() to handle potential whitespace in values
-            labels = np.array([0 if str(x).strip() == 'Normal' else 1 for x in raw_labels])
-        else:
-            labels = np.asarray(raw_labels).astype(int)
-            
-        # Drop label column
-        feature_df = temp.drop(columns=[label_col], errors='ignore')
-
-        # Drop 'Timestamp' or any time column
-        if 'Timestamp' in feature_df.columns:
-            feature_df = feature_df.drop(columns=['Timestamp'])
-        else:
-            for col in feature_df.columns:
-                if 'time' in col.lower():
-                    feature_df = feature_df.drop(columns=[col])
-                    break
-
-        temp = feature_df.values
+        labels = np.asarray(temp['attack'])
+        temp = np.asarray(temp.iloc[:, 1:52])
 
         if np.any(sum(np.isnan(temp))!=0):
             print('Data contains NaN which replaced with zero')
             temp = np.nan_to_num(temp)
 
         self.mean, self.std = mean_data, std_data
+        # if self.train:
+        #     self.mean = np.mean(temp, axis=0)
+        #     self.std = np.std(temp , axis=0)
+        # else:
+        #     self.std[self.std == 0.0] = 1.0
+        #     temp = (temp - self.mean) / self.std
 
         if self.train:
             min_column = np.amin(temp, axis=0)
             max_column = np.amax(temp, axis=0)
             self.mean, self.std = min_column, max_column 
+            range_val = (max_column - min_column) + 1e-20
+            temp = (temp - min_column) / range_val 
         else:
             self.mean, self.std = mean_data, std_data
             range_val = (std_data - mean_data) + 1e-20
@@ -112,9 +69,21 @@ class SWAT(Dataset):
 
         self.targets = labels
         self.data = np.asarray(temp)
+        self.data, self.targets = self.convert_to_windows(wsz, stride)
 
-        # Pre-calculate window start indices for lazy loading
-        self.sliding_window_start_indices = np.arange(0, self.data.shape[0] - self.wsz + 1, self.stride)
+    def convert_to_windows(self, w_size, stride):
+        windows = []
+        wlabels = []
+        sz = int((self.data.shape[0]-w_size)/stride)
+        for i in range(0, sz):
+            st = i * stride
+            w = self.data[st:st+w_size]
+            if self.targets[st:st+w_size].any() > 0:
+                lbl = 1
+            else: lbl=0
+            windows.append(w)
+            wlabels.append(lbl)
+        return np.stack(windows), np.stack(wlabels)
 
     def __getitem__(self, index):
         """
@@ -123,16 +92,13 @@ class SWAT(Dataset):
         Returns:
             dict: {'ts': ts, 'target': index of target class, 'meta': dict}
         """
-        # Lazy loading of windows
-        idx = self.sliding_window_start_indices[index]
-        window = self.data[idx : idx + self.wsz]
-        window_targets = self.targets[idx : idx + self.wsz]
-        
-        target = 1 if np.any(window_targets > 0) else 0
-        class_name = self.classes[target]
-        
-        ts_org = torch.from_numpy(window).float().to(device)
-        target = torch.tensor(target, dtype=torch.long).to(device)
+        ts_org = torch.from_numpy(self.data[index]).float() # cuda
+        if len(self.targets) > 0:
+            target = torch.tensor(self.targets[index].astype(int), dtype=torch.long)
+            class_name = self.classes[target]
+        else:
+            target = 0
+            class_name = ''
 
         ts_size = (ts_org.shape[0], ts_org.shape[1])
 
@@ -152,7 +118,7 @@ class SWAT(Dataset):
         self.targets = np.concatenate((self.targets, new_ds.targets), axis=0)
 
     def __len__(self):
-        return len(self.sliding_window_start_indices)
+        return len(self.data)
 
     def extra_repr(self):
         return "Split: {}".format("Train" if self.train is True else "Test")
