@@ -243,9 +243,48 @@ def main():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(BASE_DIR)
 
+    # Define Kaggle input path
+    kaggle_input_path = "/kaggle/input/datasets/patrickfleith/nasa-anomaly-detection-dataset-smap-msl"
+    writable_dataset_path = os.path.join(BASE_DIR, "datasets", "msl")
+
+    # Ensure writable directory exists
+    os.makedirs(writable_dataset_path, exist_ok=True)
+
+    # Check if Kaggle input exists
+    if os.path.exists(kaggle_input_path):
+        print(f"Found Kaggle dataset at: {kaggle_input_path}")
+        import shutil
+
+        # Copy labeled_anomalies.csv
+        src_csv = os.path.join(kaggle_input_path, "labeled_anomalies.csv")
+        dst_csv = os.path.join(writable_dataset_path, "labeled_anomalies.csv")
+        if os.path.exists(src_csv) and not os.path.exists(dst_csv):
+            print(f"Copying {src_csv} to {dst_csv}...")
+            shutil.copyfile(src_csv, dst_csv)
+        
+        # Function to safely copy directories
+        def safe_copy_dir(src_subpath, dst_name):
+            src = os.path.join(kaggle_input_path, src_subpath)
+            dst = os.path.join(writable_dataset_path, dst_name)
+            if os.path.exists(src):
+                if not os.path.exists(dst):
+                    print(f"Copying {src} to {dst}...")
+                    shutil.copytree(src, dst)
+                else:
+                    print(f"Directory {dst} already exists. Skipping copy.")
+            else:
+                 print(f"Warning: Source directory {src} not found.")
+
+        # The structure is .../data/data/train and .../data/data/test
+        safe_copy_dir(os.path.join("data", "data", "train"), "train")
+        safe_copy_dir(os.path.join("data", "data", "test"), "test")
+        
+    else:
+        print("Kaggle input path not found. Using local path if available.")
+
     csv_path = "datasets/msl/labeled_anomalies.csv"
     data_info = pd.read_csv(csv_path)
-    data_info = data_info[data_info["spacecraft"] == "msl"]
+    data_info = data_info[data_info["spacecraft"] == "MSL"]
 
     time_results = run_experiments(BASE_DIR, data_info, sys.executable)
     eval_results = evaluate_experiments(data_info)
