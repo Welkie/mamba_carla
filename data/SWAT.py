@@ -24,6 +24,9 @@ class SWAT(Dataset):
     def __init__(self, fname, root=MyPath.db_root_dir('swat'), train=True, transform=None, sanomaly= None, mean_data=None, std_data=None):
 
         super(SWAT, self).__init__()
+        if 'swat_DATASET_PATH' in os.environ:
+            root = os.environ['swat_DATASET_PATH']
+
         self.root = root
         self.transform = transform
         self.sanomaly = sanomaly
