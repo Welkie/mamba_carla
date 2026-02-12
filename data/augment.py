@@ -1,10 +1,6 @@
-
 import random
 import numpy as np
 import torch
-
-
-
 
 class NoiseTransformation(object):
     def __init__(self, sigma):
