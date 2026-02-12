@@ -121,16 +121,16 @@ def run_experiments(base_dir, data_info, python_exec):
     print("="*30)
 
     # Save time results
-    os.makedirs("results/MSL", exist_ok=True)
+    os.makedirs("results/msl", exist_ok=True)
     time_results = {
         "TOTAL_TIME": total_time,
         "AVG_TIME": avg_time,
         "MAX_GPU_MEM_MB": max_gpu_mem_mb
     }
-    with open("results/MSL/time_results.json", "w") as f:
+    with open("results/msl/time_results.json", "w") as f:
         json.dump(time_results, f, indent=2)
     
-    print(f"\nTime results saved to results/MSL/time_results.json")
+    print(f"\nTime results saved to results/msl/time_results.json")
     return time_results
 
 # =========================================================
@@ -147,8 +147,8 @@ def evaluate_experiments(data_info):
     ])
 
     for fname in data_info["chan_id"]:
-        test_path = f"results/MSL/{fname}/classification/classification_testprobs.csv"
-        train_path = f"results/MSL/{fname}/classification/classification_trainprobs.csv"
+        test_path = f"results/msl/{fname}/classification/classification_testprobs.csv"
+        train_path = f"results/msl/{fname}/classification/classification_trainprobs.csv"
 
         if not os.path.exists(test_path) or not os.path.exists(train_path):
             print(f"Skip {fname} (missing files)")
@@ -191,7 +191,7 @@ def evaluate_experiments(data_info):
 
     summary = add_summary_statistics(res_df)
 
-    with open("results/MSL/evaluation_results.json", "w") as f:
+    with open("results/msl/evaluation_results.json", "w") as f:
         json.dump(summary, f, indent=2)
 
     print("\n" + "="*30)
@@ -209,7 +209,7 @@ def evaluate_experiments(data_info):
 # WRITE SUMMARY
 # =========================================================
 def write_summary(time_results, eval_results):
-    out = "results/MSL/ketqua.txt"
+    out = "results/msl/ketqua.txt"
 
     summary_lines = [
         "================ SUMMARY ================",
@@ -243,9 +243,9 @@ def main():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(BASE_DIR)
 
-    csv_path = "datasets/MSL/labeled_anomalies.csv"
+    csv_path = "datasets/msl/labeled_anomalies.csv"
     data_info = pd.read_csv(csv_path)
-    data_info = data_info[data_info["spacecraft"] == "MSL"]
+    data_info = data_info[data_info["spacecraft"] == "msl"]
 
     time_results = run_experiments(BASE_DIR, data_info, sys.executable)
     eval_results = evaluate_experiments(data_info)

@@ -283,8 +283,8 @@ def main():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
     os.chdir(BASE_DIR)
 
-    # Lấy danh sách file dataset trong folder datasets/SMD/train
-    train_dir = os.path.join("datasets", "SMD", "train")
+    # Lấy danh sách file dataset trong folder datasets/smd/train
+    train_dir = os.path.join("datasets", "smd", "train")
     if not os.path.exists(train_dir):
         print(f"Error: Directory {train_dir} does not exist.")
         return

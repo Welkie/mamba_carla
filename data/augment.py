@@ -273,10 +273,3 @@ class SubAnomaly(object):
         anomalous_window = random.choice(anomalies)
 
         return anomalous_window
-
-
-
-
-
-
-

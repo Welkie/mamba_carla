@@ -128,16 +128,16 @@ def run_experiments(base_dir, datasets, python_exec):
     print("="*30)
 
     # Save time results
-    os.makedirs("results/SWAT", exist_ok=True)
+    os.makedirs("results/swat", exist_ok=True)
     time_results = {
         "TOTAL_TIME": total_time,
         "AVG_TIME": avg_time,
         "MAX_GPU_MEM_MB": max_gpu_mem_mb
     }
-    with open("results/SWAT/time_results.json", "w") as f:
+    with open("results/swat/time_results.json", "w") as f:
         json.dump(time_results, f, indent=2)
     
-    print(f"\nTime results saved to results/SWAT/time_results.json")
+    print(f"\nTime results saved to results/swat/time_results.json")
     return time_results
 
 # =========================================================
@@ -154,8 +154,8 @@ def evaluate_experiments(datasets):
     ])
 
     for fname in datasets:
-        test_path = f"results/SWAT/{fname}/classification/classification_testprobs.csv"
-        train_path = f"results/SWAT/{fname}/classification/classification_trainprobs.csv"
+        test_path = f"results/swat/{fname}/classification/classification_testprobs.csv"
+        train_path = f"results/swat/{fname}/classification/classification_trainprobs.csv"
 
         if not os.path.exists(test_path) or not os.path.exists(train_path):
             print(f"Skip {fname} (missing files)")
@@ -198,7 +198,7 @@ def evaluate_experiments(datasets):
 
     summary = add_summary_statistics(res_df)
 
-    with open("results/SWAT/evaluation_results.json", "w") as f:
+    with open("results/swat/evaluation_results.json", "w") as f:
         json.dump(summary, f, indent=2)
 
     print("\n" + "="*30)
@@ -216,7 +216,7 @@ def evaluate_experiments(datasets):
 # WRITE SUMMARY
 # =========================================================
 def write_summary(time_results, eval_results):
-    out = "results/SWAT/ketqua.txt"
+    out = "results/swat/ketqua.txt"
 
     summary_lines = [
         "================ SUMMARY ================",
@@ -256,7 +256,7 @@ def main():
     # kaggle_input_path = "/kaggle/input/swat-dataset-secure-water-treatment-system"
     kaggle_input_path = "/kaggle/input/datasets/vishala28/swat-dataset-secure-water-treatment-system"
 
-    writable_dataset_path = os.path.join(BASE_DIR, "datasets", "SWAT")
+    writable_dataset_path = os.path.join(BASE_DIR, "datasets", "swat")
 
     # Ensure writable directory exists
     os.makedirs(writable_dataset_path, exist_ok=True)
@@ -306,8 +306,8 @@ def main():
         else:
             print("Warning: Could not find attack file in Kaggle input")
 
-        os.environ['SWAT_DATASET_PATH'] = writable_dataset_path
-        print(f"Set SWAT_DATASET_PATH to {writable_dataset_path}")
+        os.environ['swat_DATASET_PATH'] = writable_dataset_path
+        print(f"Set swat_DATASET_PATH to {writable_dataset_path}")
     else:
         # Local environment fallback
         print("Kaggle input path not found. using local path if available.")
@@ -316,10 +316,10 @@ def main():
     if not os.path.exists(os.path.join(writable_dataset_path, "normal.csv")) or \
        not os.path.exists(os.path.join(writable_dataset_path, "attack.csv")):
         print(f"Warning: normal.csv or attack.csv not found in {writable_dataset_path}")
-        print("Please ensure 'datasets/SWAT/normal.csv' and 'datasets/SWAT/attack.csv' exist.")
+        print("Please ensure 'datasets/swat/normal.csv' and 'datasets/swat/attack.csv' exist.")
     
-    os.environ['SWAT_DATASET_PATH'] = writable_dataset_path
-    print(f"Set SWAT_DATASET_PATH to {writable_dataset_path}")
+    os.environ['swat_DATASET_PATH'] = writable_dataset_path
+    print(f"Set swat_DATASET_PATH to {writable_dataset_path}")
 
 
     time_results = run_experiments(BASE_DIR, datasets, sys.executable)
