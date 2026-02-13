@@ -181,7 +181,20 @@ def evaluate_experiments(datasets):
             thr = t[idx]
 
             pred = scores >= thr
-            tn, fp, fn, tp = confusion_matrix(df_test["Class"], pred).ravel()
+            cm = confusion_matrix(df_test["Class"], pred)
+            if cm.size == 1:
+                # If only one class is predicted (e.g., all 0 or all 1)
+                # Determine which case it is based on the actual values
+                if df_test["Class"].iloc[0] == 0: # All true negatives (or false positives if pred=1)
+                     tn, fp, fn, tp = cm[0,0], 0, 0, 0 # assumption if pred=0
+                     if pred.iloc[0]: # If predicted 1
+                         tn, fp, fn, tp = 0, cm[0,0], 0, 0
+                else: # All true positives (or false negatives)
+                     tn, fp, fn, tp = 0, 0, cm[0,0], 0 # assumption if pred=0
+                     if pred.iloc[0]: 
+                         tn, fp, fn, tp = 0, 0, 0, cm[0,0]
+            else:
+                tn, fp, fn, tp = cm.ravel()
 
             res_df.loc[len(res_df)] = [
                 fname, pr_auc, tp, tn, fp, fn
