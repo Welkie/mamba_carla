@@ -282,41 +282,61 @@ def main():
         normal_file = None
         attack_file = None
 
-        # Heuristic to find files
-        if 'normal.csv' in files:
-            normal_file = 'normal.csv'
+        # Look for merged.csv first as requested by user
+        merged_file = None
+        if 'merged.csv' in files:
+            merged_file = 'merged.csv'
         else:
-            for f in files:
-                if 'normal' in f.lower() and f.endswith('.csv'):
-                    normal_file = f
+             for f in files:
+                if 'merged' in f.lower() and f.endswith('.csv'):
+                    merged_file = f
                     break
         
-        if 'attack.csv' in files:
-            attack_file = 'attack.csv'
+        if merged_file:
+             src = os.path.join(kaggle_input_path, merged_file)
+             print(f"Found merged dataset: {src}")
+             # Process merged dataset (split into normal.csv and attack.csv)
+             # We do this regardless if they exist to ensure fresh split from merged
+             process_merged_dataset(src, writable_dataset_path)
         else:
-            for f in files:
-                if 'attack' in f.lower() and f.endswith('.csv'):
-                    attack_file = f
-                    break
-        
-        # Copy to writable path with correct names if they don't exist
-        if normal_file:
-            src = os.path.join(kaggle_input_path, normal_file)
-            dst = os.path.join(writable_dataset_path, "normal.csv")
-            if not os.path.exists(dst):
-                print(f"Copying {src} to {dst}...")
-                shutil.copyfile(src, dst)
-        else:
-            print("Warning: Could not find normal file in Kaggle input")
+             # Fallback to looking for separate normal and attack files
+             print("merged.csv not found. Looking for separate files...")
+             
+             # Heuristic to find files
+             if 'normal.csv' in files:
+                 normal_file = 'normal.csv'
+             else:
+                 for f in files:
+                     if 'normal' in f.lower() and f.endswith('.csv'):
+                         normal_file = f
+                         break
+             
+             if 'attack.csv' in files:
+                 attack_file = 'attack.csv'
+             else:
+                 for f in files:
+                     if 'attack' in f.lower() and f.endswith('.csv'):
+                         attack_file = f
+                         break
+             
+             # Copy to writable path with correct names if they don't exist
+             if normal_file:
+                 src = os.path.join(kaggle_input_path, normal_file)
+                 dst = os.path.join(writable_dataset_path, "normal.csv")
+                 if not os.path.exists(dst):
+                     print(f"Copying {src} to {dst}...")
+                     shutil.copyfile(src, dst)
+             else:
+                 print("Warning: Could not find normal file in Kaggle input")
 
-        if attack_file:
-            src = os.path.join(kaggle_input_path, attack_file)
-            dst = os.path.join(writable_dataset_path, "attack.csv")
-            if not os.path.exists(dst):
-                print(f"Copying {src} to {dst}...")
-                shutil.copyfile(src, dst)
-        else:
-            print("Warning: Could not find attack file in Kaggle input")
+             if attack_file:
+                 src = os.path.join(kaggle_input_path, attack_file)
+                 dst = os.path.join(writable_dataset_path, "attack.csv")
+                 if not os.path.exists(dst):
+                     print(f"Copying {src} to {dst}...")
+                     shutil.copyfile(src, dst)
+             else:
+                 print("Warning: Could not find attack file in Kaggle input")
 
         os.environ['swat_DATASET_PATH'] = writable_dataset_path
         print(f"Set swat_DATASET_PATH to {writable_dataset_path}")
@@ -339,6 +359,49 @@ def main():
 
     if time_results and eval_results:
         write_summary(time_results, eval_results)
+
+def process_merged_dataset(merged_path, output_dir):
+    """
+    Splits the merged.csv into normal.csv (Train) and attack.csv (Test).
+    Standard SWAT split: 
+    - Train (Normal): First ~7 days. 
+    - Test (Attack): Remaining ~4 days (contains both Normal and Attack).
+    
+    Standard row counts (approx):
+    - Train: 496800
+    - Test: 449919
+    """
+    print(f"Processing merged dataset from {merged_path}...")
+    try:
+        df = pd.read_csv(merged_path)
+        # Strip whitespace from columns
+        df.columns = df.columns.str.strip()
+        
+        # Determine split point
+        # Option 1: Hardcoded standard SWAT split
+        split_index = 496800
+        
+        if len(df) < split_index:
+             print(f"Warning: Dataset length ({len(df)}) is smaller than standard split ({split_index}). Using 50% split.")
+             split_index = len(df) // 2
+        
+        train_df = df.iloc[:split_index].copy()
+        test_df = df.iloc[split_index:].copy()
+        
+        # Save to destination
+        train_path = os.path.join(output_dir, "normal.csv")
+        test_path = os.path.join(output_dir, "attack.csv")
+        
+        train_df.to_csv(train_path, index=False)
+        test_df.to_csv(test_path, index=False)
+        
+        print(f"Split merged.csv into:")
+        print(f"  Train (normal.csv): {len(train_df)} rows")
+        print(f"  Test (attack.csv): {len(test_df)} rows")
+        
+    except Exception as e:
+        print(f"Error processing merged dataset: {e}")
+        raise e
 
 if __name__ == "__main__":
     main()

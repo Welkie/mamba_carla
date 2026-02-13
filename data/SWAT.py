@@ -61,27 +61,31 @@ class SWAT(Dataset):
             label_col = temp.columns[-1]
             print(f"Using last column '{label_col}' as label.")
 
+        # Map labels to 0 (Normal) and 1 (Attack)
+        # Assuming 'Normal' is 0 or 'Normal', 'Attack' is 1 or 'Attack'
+        temp[label_col] = temp[label_col].apply(lambda x: 1 if str(x).lower() in ['attack', '1', 'anomaly'] else 0)
         labels = np.asarray(temp[label_col])
         
-        # Extract features (assuming column 0 is Timestamp, and columns 1-51 are sensors)
-        # Verify valid columns
-        try:
-            temp = np.asarray(temp.iloc[:, 1:52])
-        except Exception as e:
-            print(f"Error extracting features: {e}. Checking DataFrame shape: {temp.shape}")
-            raise e
+        # Robust Feature Extraction
+        # Drop Timestamp and Label columns to ensure only sensors remain
+        # User defined format: Timestamp, Sensor1, ..., Sensor51, Label
+        drop_cols = ['Timestamp', 'timestamp', 'Date', 'Time', label_col]
+        
+        # Also drop 'Normal/Attack' if it exists and wasn't picked as label_col
+        if 'Normal/Attack' in temp.columns and 'Normal/Attack' != label_col:
+            drop_cols.append('Normal/Attack')
+
+        temp = temp.drop(columns=drop_cols, errors='ignore')
+
+        # print(f"Features columns: {temp.columns.tolist()}")
+
+        temp = np.asarray(temp).astype(np.float32)
 
         if np.any(sum(np.isnan(temp))!=0):
             print('Data contains NaN which replaced with zero')
             temp = np.nan_to_num(temp)
 
         self.mean, self.std = mean_data, std_data
-        # if self.train:
-        #     self.mean = np.mean(temp, axis=0)
-        #     self.std = np.std(temp , axis=0)
-        # else:
-        #     self.std[self.std == 0.0] = 1.0
-        #     temp = (temp - self.mean) / self.std
 
         if self.train:
             min_column = np.amin(temp, axis=0)
@@ -90,9 +94,18 @@ class SWAT(Dataset):
             range_val = (max_column - min_column) + 1e-20
             temp = (temp - min_column) / range_val 
         else:
-            self.mean, self.std = mean_data, std_data
-            range_val = (std_data - mean_data) + 1e-20
-            temp = (temp - mean_data) / range_val
+            # For test set, use the statistics from training set
+            # If mean_data and std_data are provided (which they should be for test)
+            if mean_data is None or std_data is None:
+                 print("Warning: Test set loaded without mean_data/std_data. Using self-statistics (may cause leakage/shift).")
+                 min_column = np.amin(temp, axis=0)
+                 max_column = np.amax(temp, axis=0)
+                 self.mean, self.std = min_column, max_column
+            else:
+                 self.mean, self.std = mean_data, std_data
+            
+            range_val = (self.std - self.mean) + 1e-20
+            temp = (temp - self.mean) / range_val
 
         self.targets = labels
         self.data = np.asarray(temp)
