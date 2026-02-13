@@ -1,4 +1,3 @@
-
 import numpy as np
 import torch
 from torch.utils.data import Dataset
@@ -10,7 +9,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     AugmentedDataset
     Returns a ts together with an augmentation.
 """
-
 
 class AugmentedDataset(Dataset):
     def __init__(self, dataset):
