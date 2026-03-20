@@ -41,15 +41,17 @@ class WADI(Dataset):
             # Format: Row, Date, Time, sensor1..sensorN   (NO label column)
             # ------------------------------------------------------------------
             file_path = os.path.join(self.root, "WADI_14days_new.csv")
-            df = pd.read_csv(file_path)
+            df = pd.read_csv(file_path, low_memory=False)
             df.columns = df.columns.str.strip()
 
             # Drop non-sensor columns
             drop_cols = ['Row', 'Date', 'Time']
             df = df.drop(columns=[c for c in drop_cols if c in df.columns], errors='ignore')
 
-            # Drop any remaining object/string columns
-            df = df.select_dtypes(include=[np.number])
+            # Force all remaining columns to numeric (coerce bad values to NaN)
+            df = df.apply(pd.to_numeric, errors='coerce')
+            # Drop columns that are entirely NaN after coercion
+            df = df.dropna(axis=1, how='all')
 
             temp = df.values.astype(np.float32)
             labels = np.zeros(len(temp), dtype=np.int64)
@@ -64,7 +66,7 @@ class WADI(Dataset):
             file_path = os.path.join(self.root, "WADI_attackdataLABLE.csv")
 
             # Read with the first row treated as header (the fake numeric one)
-            raw = pd.read_csv(file_path, header=0)
+            raw = pd.read_csv(file_path, header=0, low_memory=False)
 
             # The second row (index 0 after reading) holds the REAL column names
             real_cols = raw.iloc[0].tolist()
@@ -90,9 +92,15 @@ class WADI(Dataset):
             # Drop non-sensor columns
             drop_cols = ['Row', 'Date', 'Time', label_col]
             df = df.drop(columns=[c for c in drop_cols if c in df.columns], errors='ignore')
-            df = df.select_dtypes(include=[np.number])
+
+            # Force all remaining columns to numeric (critical: avoids 0-column issue)
+            df = df.apply(pd.to_numeric, errors='coerce')
+            # Drop columns that are entirely NaN after coercion
+            df = df.dropna(axis=1, how='all')
 
             temp = df.values.astype(np.float32)
+
+        print(f"[WADI] {'Train' if self.train else 'Test'} shape: {temp.shape}")
 
         # Handle NaN
         if np.any(np.isnan(temp)):
@@ -116,6 +124,15 @@ class WADI(Dataset):
                 self.std = std_data.copy()
                 self.std[self.std == 0.0] = 1.0
                 self.mean = mean_data
+
+            # Align columns: if test has fewer/more columns than train, trim/pad
+            if temp.shape[1] != self.mean.shape[0]:
+                print(f"[WADI] Column mismatch: test={temp.shape[1]}, train={self.mean.shape[0]}. Trimming to min.")
+                n = min(temp.shape[1], self.mean.shape[0])
+                temp = temp[:, :n]
+                self.mean = self.mean[:n]
+                self.std = self.std[:n]
+
             temp = (temp - self.mean) / self.std
 
         self.targets = labels

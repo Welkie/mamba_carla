@@ -14,7 +14,7 @@ num_heads: 1
 # Model
 backbone: resnet_ts
 res_kwargs:
-  in_channels: 120
+  in_channels: 127
   mid_channels: 4
 
 # Dataset
