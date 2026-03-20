@@ -4,17 +4,21 @@
 2. SMAP
     + run_smap.py
     + data/SMAP.py
-3. SMD
-    + run_smd.py chia 2 stage
+3. SMD - Split into 2 datasets
+    + run_smd.py 
     + data/SMD.py   
-
-# Update CPU
-4. SWaT
+4. Yahoo
+    + run_yahoo.py
+    + data/yahoo.py
+5. SWaT - Use CPU
     + run_swat.py
     + data/SWAT.py
-5. WADI
+6. WADI - Use CPU
     + run_wadi.py
     + data/WADI.py
+7. KPI - Split into 2 datasets
+    + run_kpi.py
+    + data/KPI.py
 
 # Update general to use CPU
     data
