@@ -7,7 +7,7 @@ model_kwargs:
    head: mlp
    features_dim: 4
 mamba_kwargs:
-  in_channels: 127
+  in_channels: 123
   mid_channels: 4
   num_layers: 3
   d_state: 16
