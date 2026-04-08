@@ -379,14 +379,17 @@ def process_merged_dataset(merged_path, output_dir):
         
         # Determine split point
         # Option 1: Hardcoded standard SWAT split
-        split_index = 496800
+        train_size = 496800
+        test_size = 449919
         
-        if len(df) < split_index:
-             print(f"Warning: Dataset length ({len(df)}) is smaller than standard split ({split_index}). Using 50% split.")
+        if len(df) < train_size + test_size:
+             print(f"Warning: Dataset length ({len(df)}) is smaller than expected standard split ({train_size + test_size}). Using 50% split.")
              split_index = len(df) // 2
-        
-        train_df = df.iloc[:split_index].copy()
-        test_df = df.iloc[split_index:].copy()
+             train_df = df.iloc[:split_index].copy()
+             test_df = df.iloc[split_index:].copy()
+        else:
+             train_df = df.iloc[:train_size].copy()
+             test_df = df.iloc[-test_size:].copy()
         
         # Save to destination
         train_path = os.path.join(output_dir, "normal.csv")
