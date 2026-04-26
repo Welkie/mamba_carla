@@ -1,0 +1,152 @@
+\begin{thebibliography}{10}
+\providecommand{\url}[1]{\texttt{#1}}
+\providecommand{\urlprefix}{URL }
+
+\bibitem{darban2022deep}
+Darban, Z.Z., Webb, G.I., Pan, S., Aggarwal, C.C., Salehi, M.: Deep learning
+  for time series anomaly detection: A survey. arXiv preprint arXiv:2211.05244
+  (2022)
+
+\bibitem{darban2024carla}
+Darban, Z.Z., Webb, G.I., Pan, S., Aggarwal, C.C., Salehi, M.: Carla:
+  Self-supervised contrastive representation learning for time series anomaly
+  detection. Pattern Recognition  157,  110874 (2025)
+
+\bibitem{fawaz2019deep}
+Ismail~Fawaz, H., Forestier, G., Weber, J., Idoumghar, L., Muller, P.A.: Deep
+  learning for time series classification: a review. Data Mining and Knowledge
+  Discovery  33(4),  917--963 (2019)
+
+\bibitem{gu2022efficiently}
+Gu, A., Goel, K., Re, C.: Efficiently modeling long sequences with structured
+  state spaces. In: The International Conference on Learning Representations
+  (ICLR) (2022)
+
+\bibitem{gu2023mamba}
+Gu, A., Dao, T.: Mamba: Linear-time sequence modeling with selective state
+  spaces. arXiv preprint arXiv:2312.00752  (2023)
+
+\bibitem{hundman2018detecting}
+Hundman, K., Constantinou, V., Laporte, C., Colwell, I., Soderstrom, T.:
+  Detecting spacecraft anomalies using lstms and nonparametric dynamic
+  thresholding. In: Proceedings of the 24th ACM SIGKDD International Conference
+  on Knowledge Discovery and Data Mining. pp. 387--395 (2018)
+
+\bibitem{su2019robust}
+Su, Y., Zhao, Y., Niu, C., Liu, R., Sun, W., Pei, D.: Robust anomaly detection
+  for multivariate time series through stochastic recurrent neural network. In:
+  Proceedings of the 25th ACM SIGKDD International Conference on Knowledge
+  Discovery and Data Mining. pp. 2828--2837 (2019)
+
+\bibitem{mathur2016swat}
+Mathur, A.P., Tippenhauer, N.O.: Swat: A water treatment testbed for research
+  and training on ics security. In: Proceedings of the International Workshop
+  on Cyber-Physical Systems for Smart Water Networks. pp. 31--36 (2016)
+
+\bibitem{ahmed2017wadi}
+Ahmed, C.M., Palleti, V.R., Mathur, A.P.: Wadi: a water distribution testbed
+  for research in the design of secure cyber physical systems. In: Proceedings
+  of the 3rd International Workshop on Cyber-Physical Systems for Smart Water
+  Networks. pp. 25--28 (2017)
+
+\bibitem{laptev2015benchmark}
+Laptev, N., Yosinski, J., Amizadeh, S.: A benchmark dataset for time series
+  anomaly detection. KDD Workshop on Outlier Detection and Description under
+  Data Diversity  (2015)
+
+\bibitem{schmidl2022anomaly}
+Schmidl, S., Wenig, P., Papenbrock, T.: Anomaly detection in time series: a
+  comprehensive evaluation. Proceedings of the VLDB Endowment  15(9),
+  1779--1797 (2022)
+
+\bibitem{box1970distribution}
+Box, G.E., Pierce, D.A.: Distribution of residual autocorrelations in
+  autoregressive-integrated moving average time series models. Journal of the
+  American Statistical Association  65(332),  1509--1526 (1970)
+
+\bibitem{liu2008isolation}
+Liu, F.T., Ting, K.M., Zhou, Z.H.: Isolation forest. In: 2008 Eighth IEEE
+  International Conference on Data Mining. pp. 413--422. IEEE (2008)
+
+\bibitem{pang2021deep}
+Pang, G., Shen, C., Cao, L., Hengel, A.V.D.: Deep learning for anomaly
+  detection: A review. ACM Computing Surveys  54(2),  1--38 (2021)
+
+\bibitem{park2018multimodal}
+Park, D., Hoshi, Y., Kemp, C.C.: A multimodal anomaly detector for
+  robot-assisted feeding using an lstm-based variational autoencoder. IEEE
+  Robotics and Automation Letters  3(3),  1544--1551 (2018)
+
+\bibitem{yue2022ts2vec}
+Yue, Z., Wang, Y., Duan, J., Yang, T., Huang, C., Tong, Y., Xu, B.: Ts2vec:
+  Towards universal representation of time series. In: Proceedings of the AAAI
+  Conference on Artificial Intelligence. vol.~36, pp. 8980--8987 (2022)
+
+\bibitem{yao2023regularizing}
+Yao, Y., Ma, J., Ye, Y.: Regularizing autoencoders with wavelet transform for
+  sequence anomaly detection. Pattern Recognition  134,  109084 (2023)
+
+\bibitem{tuli2022tranad}
+Tuli, S., Casale, G., Jennings, N.R.: Tranad: Deep transformer networks for
+  anomaly detection in multivariate time series data. Proceedings of the VLDB
+  Endowment  15,  1201--1214 (2022)
+
+\bibitem{xu2021anomaly}
+Xu, J., Wu, H., Wang, J., Long, M.: Anomaly transformer: Time series anomaly
+  detection with association discrepancy. In: The International Conference on
+  Learning Representations (ICLR) (2022)
+
+\bibitem{chen2020simple}
+Chen, T., Kornblith, S., Norouzi, M., Hinton, G.: A simple framework for
+  contrastive learning of visual representations. In: The International
+  Conference on Machine Learning (ICML). pp. 1597--1607 (2020)
+
+\bibitem{logeswaran2018efficient}
+Logeswaran, L., Lee, H.: An efficient framework for learning sentence
+  representations. In: The International Conference on Learning Representations
+  (ICLR) (2018)
+
+\bibitem{yang2023dcdetector}
+Yang, Y., Zhang, C., Zhou, T., Wen, Q., Sun, L.: Dcdetector: Dual attention
+  contrastive representation learning for time series anomaly detection. In:
+  Proceedings of the 29th ACM SIGKDD International Conference on Knowledge
+  Discovery and Data Mining. pp. 3033--3044 (2023)
+
+\bibitem{smith2023simplified}
+Smith, J.T., Warrington, A., Linderman, S.W.: Simplified state space layers for
+  sequence modeling. In: The International Conference on Learning
+  Representations (ICLR) (2023)
+
+\bibitem{msl_smap_dataset}
+Fleith, P.: Nasa anomaly detection dataset (msl and smap).
+  \url{https://www.kaggle.com/datasets/patrickfleith/nasa-anomaly-detection-dataset-smap-msl}
+  (2021)
+
+\bibitem{smd_dataset}
+OmniAnomaly: Server machine dataset (smd).
+  \url{https://www.kaggle.com/datasets/mgusat/smd-onmiad} (2019)
+
+\bibitem{swat_dataset_kaggle}
+iTrust, S.: Swat dataset.
+  \url{https://www.kaggle.com/datasets/vishala28/swat-dataset-secure-water-treatment-system}
+  (2016)
+
+\bibitem{wadi_dataset_kaggle}
+iTrust, S.: Wadi dataset.
+  \url{https://www.kaggle.com/datasets/giovannimonco/wadi-data} (2017)
+
+\bibitem{yahoo_a1_dataset}
+Labs, Y.: Yahoo a1 benchmark dataset.
+  \url{https://github.com/harris0704/nbaData16-17/tree/master/Yahoo_S5_Data/A1Benchmark}
+  (2015)
+
+\bibitem{kpi_dataset}
+AIOps, N.: Kpi anomaly detection dataset.
+  \url{https://github.com/NetManAIOps/KPI-Anomaly-Detection} (2018)
+
+\bibitem{kim2022towards}
+Kim, S., Choi, K., Choi, H.S., Lee, B., Yoon, S.: Towards a rigorous evaluation
+  of time-series anomaly detection. In: Proceedings of the AAAI Conference on
+  Artificial Intelligence. vol.~36, pp. 7194--7201 (2022)
+
+\end{thebibliography}
