@@ -33,7 +33,7 @@ class WADI(Dataset):
 
         self.data = []
         self.targets = []
-        wsz, stride = 1024, 200
+        wsz, stride = 2048, 200
 
         if self.train:
             # ------------------------------------------------------------------
