@@ -27,10 +27,6 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-set_seed(4)
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 # Parser
 parser = argparse.ArgumentParser(description='pretext')
 parser.add_argument('--config_env',
@@ -39,7 +35,13 @@ parser.add_argument('--config_exp',
                     help='Config file for the experiment')
 parser.add_argument('--fname',
                     help='Config the file name of Dataset')
+parser.add_argument('--seed', type=int, default=4,
+                    help='Random seed')
 args = parser.parse_args()
+
+set_seed(args.seed)
+
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def main():
     # # Set PyTorch-specific threading options

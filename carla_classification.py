@@ -25,18 +25,18 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-set_seed(4)
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 FLAGS = argparse.ArgumentParser(description='classification Loss')
 FLAGS.add_argument('--config_env', help='Location of path config file')
 FLAGS.add_argument('--config_exp', help='Location of experiments config file')
 FLAGS.add_argument('--fname', help='Config the file name of Dataset')
+FLAGS.add_argument('--seed', type=int, default=4, help='Random seed')
 
 def main():
     global best_f1
     args = FLAGS.parse_args()
+    set_seed(args.seed)
     p = create_config(args.config_env, args.config_exp, args.fname)
     print(colored('CARLA Self-supervised Classification stage --> ', 'yellow'))
 

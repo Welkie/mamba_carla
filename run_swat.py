@@ -49,9 +49,9 @@ def add_summary_statistics(res_df):
 # =========================================================
 # RUN EXPERIMENTS
 # =========================================================
-def run_experiments(base_dir, datasets, python_exec):
+def run_experiments(base_dir, datasets, python_exec, seed=42):
     print("\n" + "="*30)
-    print("STARTING EXPERIMENTS")
+    print(f"STARTING EXPERIMENTS (SEED = {seed})")
     print("="*30)
     
     execution_times = []
@@ -75,7 +75,8 @@ def run_experiments(base_dir, datasets, python_exec):
                 python_exec, "carla_pretext.py",
                 "--config_env", "configs/env.yml",
                 "--config_exp", "configs/pretext/carla_pretext_swat.yml",
-                "--fname", fname
+                "--fname", fname,
+                "--seed", str(seed)
             ], capture_output=True, text=True, check=True)
             
             # Parse GPU memory from pretext
@@ -95,7 +96,8 @@ def run_experiments(base_dir, datasets, python_exec):
                 python_exec, "carla_classification.py",
                 "--config_env", "configs/env.yml",
                 "--config_exp", "configs/classification/carla_classification_swat.yml",
-                "--fname", fname
+                "--fname", fname,
+                "--seed", str(seed)
             ], capture_output=True, text=True, check=True)
 
             # Parse GPU memory from classification
@@ -354,7 +356,8 @@ def main():
     print(f"Set swat_DATASET_PATH to {writable_dataset_path}")
 
 
-    time_results = run_experiments(BASE_DIR, datasets, sys.executable)
+    SEED = 42
+    time_results = run_experiments(BASE_DIR, datasets, sys.executable, seed=SEED)
     eval_results = evaluate_experiments(datasets)
 
     if time_results and eval_results:
